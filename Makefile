@@ -42,6 +42,7 @@ LLVM3_ARCHIVE=llvm-3.7.0.src.tar.xz
 CLANG_URL=http://llvm.org/releases/3.7.0/cfe-3.7.0.src.tar.xz
 CLANG_ARCHIVE=cfe-3.7.0.src.tar.xz
 CLANG_TOOLS_EXTRA_URL=http://llvm.org/git/clang-tools-extra.git
+CLANG_TOOLS_EXTRA_DIR=clang-tools-extra
 COMPILER_RT_URL=http://llvm.org/releases/3.7.0/compiler-rt-3.7.0.src.tar.xz
 COMPILER_RT_ARCHIVE=compiler-rt-3.7.0.src.tar.xz
 STP_URL=https://github.com/stp/stp.git
@@ -52,7 +53,8 @@ Z3_2_19_ARCHIVE=z3-2.19.tar.gz
 KLEE_UCLIBC_URL=https://github.com/klee/klee-uclibc.git
 BEAR_URL=https://github.com/rizsotto/Bear.git
 BEAR_VERSION=2.1.4
-STP_VERSION=2.1.2
+#STP_VERSION=2.1.2
+STP_VERSION=stp-2.2.0
 MAXSMT_URL=https://github.com/mechtaev/maxsmt-playground.git
 LOCAL_LIB_URL=http://search.cpan.org/CPAN/authors/id/H/HA/HAARG/local-lib-2.000018.tar.gz
 LOCAL_LIB_ARCHIVE=local-lib-2.000018.tar.gz
@@ -241,13 +243,13 @@ distclean-nsynth: clean-nsynth
 
 # Clang #
 
-clang: build/$(LLVM3_ARCHIVE) build/$(CLANG_ARCHIVE) build/$(COMPILER_RT_ARCHIVE)
+clang: build/$(LLVM3_ARCHIVE) build/$(CLANG_ARCHIVE) build/$(COMPILER_RT_ARCHIVE) build/$(CLANG_TOOLS_EXTRA_DIR)
 	cd build && tar xf $(LLVM3_ARCHIVE)
 	mkdir -p "$(LLVM3_DIR)/tools/clang"
 	cd build && tar xf $(CLANG_ARCHIVE) --directory "$(LLVM3_DIR)/tools/clang" --strip-components=1
 	mkdir -p "$(LLVM3_DIR)/projects/compiler-rt"
 	cd build && tar xf $(COMPILER_RT_ARCHIVE) --directory "$(LLVM3_DIR)/projects/compiler-rt" --strip-components=1
-	cd "$(LLVM3_DIR)/tools/clang/tools/" && rm extra -rf && git clone --branch release_37 $(CLANG_TOOLS_EXTRA_URL) extra
+	cd build && rm $(LLVM3_DIR)/tools/clang/tools/extra -rf && cp -r clang-tools-extra $(LLVM3_DIR)/tools/clang/tools/extra
 	mkdir -p "$(LLVM3_DIR)/build" && cd "$(LLVM3_DIR)/build" && cmake -G "Unix Makefiles" ../ && make
 
 build/$(LLVM3_ARCHIVE):
@@ -258,6 +260,10 @@ build/$(CLANG_ARCHIVE):
 
 build/$(COMPILER_RT_ARCHIVE):
 	cd build && $(DOWNLOAD) $(COMPILER_RT_URL)
+
+build/$(CLANG_TOOLS_EXTRA_DIR):
+	cd build && git clone --branch release_37 $(CLANG_TOOLS_EXTRA_URL) clang-tools-extra
+
 
 clean-clang:
 	rm -rf "$(LLVM3_DIR)/build"
